@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 var pages *template.Template
@@ -29,14 +30,21 @@ func displayHome(w http.ResponseWriter, r *http.Request){
 }
 
 func addNewTrans(w http.ResponseWriter, r *http.Request){
-    testTa := transaction{
+    r.ParseForm()
+    transAm, err := strconv.ParseFloat(r.FormValue("transAm"), 64)
+    if err != nil {
+        w.WriteHeader(400)
+        return
+    }
+
+    newTrans := transaction{
         Id: 1,
-        Desc: "sdfjlkas",
-        Amount: 54.32,
+        Desc: r.FormValue("transDesc"),
+        Amount: transAm,
     }
 
     w.WriteHeader(200)
-    apiTempl.ExecuteTemplate(w, "TransDispl", testTa)
+    apiTempl.ExecuteTemplate(w, "TransDispl", newTrans)
 }
 
 type transaction struct{
