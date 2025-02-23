@@ -8,6 +8,30 @@
         {{ template "Head" . }}
     </head>
     <body>
+        <header>
+            <h1>Budget tracker</h1>
+        </header>
+        <main id="main">
+            <div>
+                <h3>Saldo</h3>
+                <h2 id="totalDispl">00.00€</h2>
+            </div>
+
+            <div>
+                <form hx-post="/api/addNewTa" hx-target="#transDisp" hx-swap="beforeend">
+                    <h3>Description:</h3>
+                    <input name="transDesc" id="transDesc">
+                    <h3>Amount:</h3>
+                    <input name="transAm" id="transAm">
+                    <br>
+                    <br>
+                    <button type="submit">Add Transaction</button>
+                </form>
+            </div>
+
+            <div id="transDisp">
+            </div>
+        </main>
     </body>
 </html>
 {{ end }}

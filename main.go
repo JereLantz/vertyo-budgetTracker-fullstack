@@ -28,6 +28,23 @@ func displayHome(w http.ResponseWriter, r *http.Request){
     pages.ExecuteTemplate(w, "Home", nil)
 }
 
+func addNewTrans(w http.ResponseWriter, r *http.Request){
+    testTa := transaction{
+        Id: 1,
+        Desc: "sdfjlkas",
+        Amount: 54.32,
+    }
+
+    w.WriteHeader(200)
+    apiTempl.ExecuteTemplate(w, "TransDispl", testTa)
+}
+
+type transaction struct{
+    Id int
+    Desc string
+    Amount float64
+}
+
 func main(){
     handler := http.NewServeMux()
     server := http.Server{
@@ -35,7 +52,11 @@ func main(){
         Handler: handler,
     }
 
+    // pages
     handler.HandleFunc("GET /", displayHome)
+
+    // Api
+    handler.HandleFunc("POST /api/addNewTa", addNewTrans)
 
     log.Printf("http server started on port %s\n", server.Addr)
     log.Fatal(server.ListenAndServe())
