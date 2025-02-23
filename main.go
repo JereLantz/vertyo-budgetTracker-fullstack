@@ -1,10 +1,13 @@
 package main
 
 import (
+	"database/sql"
 	"html/template"
 	"log"
 	"net/http"
 	"strconv"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var pages *template.Template
@@ -29,7 +32,7 @@ func displayHome(w http.ResponseWriter, r *http.Request){
     pages.ExecuteTemplate(w, "Home", nil)
 }
 
-func addNewTrans(w http.ResponseWriter, r *http.Request){
+func addNewTrans(db *sql.DB, w http.ResponseWriter, r *http.Request){
     r.ParseForm()
     transAm, err := strconv.ParseFloat(r.FormValue("transAm"), 64)
     if err != nil {
@@ -38,19 +41,57 @@ func addNewTrans(w http.ResponseWriter, r *http.Request){
     }
 
     newTrans := transaction{
-        Id: 1,
         Desc: r.FormValue("transDesc"),
         Amount: transAm,
     }
 
+    addNewTransDB(db, newTrans)
+
     w.WriteHeader(200)
     apiTempl.ExecuteTemplate(w, "TransDispl", newTrans)
+}
+
+func addNewTransDB(db *sql.DB, ta transaction) error{
+    query := `INSERT INTO transactions (description, amount)
+    VALUES (?,?);`
+
+    _, err := db.Exec(query, ta.Desc, ta.Amount)
+    if err != nil {
+        return err
+    }
+
+    return nil
 }
 
 type transaction struct{
     Id int
     Desc string
     Amount float64
+}
+
+func dbInit() (*sql.DB, error){
+    query := ` CREATE TABLE IF NOT EXISTS transactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        description TEXT,
+        amount INTEGER NOT NULL);
+    `
+
+    db, err := sql.Open("sqlite3", "data.db")
+    if err != nil {
+        return nil, err
+    }
+
+    err = db.Ping()
+    if err != nil {
+        return nil, err
+    }
+
+    _, err = db.Exec(query)
+    if err != nil {
+        return nil, err
+    }
+
+    return db, nil
 }
 
 func main(){
@@ -60,11 +101,19 @@ func main(){
         Handler: handler,
     }
 
+    db, err := dbInit()
+    if err != nil {
+        log.Fatalf("error initializing the database: %s\n", err)
+    }
+    defer db.Close()
+
     // pages
     handler.HandleFunc("GET /", displayHome)
 
     // Api
-    handler.HandleFunc("POST /api/addNewTa", addNewTrans)
+    handler.HandleFunc("POST /api/addNewTa", func(w http.ResponseWriter, r *http.Request) {
+        addNewTrans(db, w, r)
+    })
 
     log.Printf("http server started on port %s\n", server.Addr)
     log.Fatal(server.ListenAndServe())
