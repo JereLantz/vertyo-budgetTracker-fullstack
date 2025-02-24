@@ -32,6 +32,29 @@ func displayHome(w http.ResponseWriter, r *http.Request){
     pages.ExecuteTemplate(w, "Home", nil)
 }
 
+func getTAsFromDB(db *sql.DB) ([]transaction, error){
+    transActions := []transaction{}
+
+    fetchAllQuery := `SELECT id, amount, description FROM transactions;`
+
+    row, err := db.Query(fetchAllQuery)
+    defer row.Close()
+    if err != nil {
+        return nil, err
+    }
+
+    for row.Next(){
+        newTa := transaction{}
+        err = row.Scan(&newTa.Id, &newTa.Amount, &newTa.Desc)
+        if err != nil {
+            return nil, err
+        }
+        transActions = append(transActions, newTa)
+    }
+
+    return transActions, nil
+}
+
 func addNewTrans(db *sql.DB, w http.ResponseWriter, r *http.Request){
     r.ParseForm()
     transAm, err := strconv.ParseFloat(r.FormValue("transAm"), 64)
@@ -107,6 +130,7 @@ func main(){
     }
     defer db.Close()
 
+    log.Print(getTAsFromDB(db))
     // pages
     handler.HandleFunc("GET /", displayHome)
 
