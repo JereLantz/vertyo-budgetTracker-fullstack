@@ -5,3 +5,10 @@
     <button hx-delete="/api/delTrans" name="{{ .Id}}">Delete</button>
 </div>
 {{ end }}
+
+
+{{ block "DispAllTas" . }}
+    {{ range . }}
+        {{ template "TransDispl" .}}
+    {{ end }}
+{{ end }}

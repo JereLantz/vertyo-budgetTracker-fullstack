@@ -55,6 +55,17 @@ func getTAsFromDB(db *sql.DB) ([]transaction, error){
     return transActions, nil
 }
 
+func displayAllTasFromDb(db *sql.DB, w http.ResponseWriter, r *http.Request){
+    //TODO:
+    transactions, err := getTAsFromDB(db)
+    if err != nil {
+        w.WriteHeader(500)
+        log.Printf("error fetching all transactions from the db %s\n", err)
+        return
+    }
+    apiTempl.ExecuteTemplate(w, "DispAllTas", transactions)
+}
+
 func addNewTrans(db *sql.DB, w http.ResponseWriter, r *http.Request){
     r.ParseForm()
     transAm, err := strconv.ParseFloat(r.FormValue("transAm"), 64)
@@ -130,7 +141,6 @@ func main(){
     }
     defer db.Close()
 
-    log.Print(getTAsFromDB(db))
     // pages
     handler.HandleFunc("GET /", displayHome)
 
@@ -138,6 +148,10 @@ func main(){
     handler.HandleFunc("POST /api/addNewTa", func(w http.ResponseWriter, r *http.Request) {
         addNewTrans(db, w, r)
     })
+    handler.HandleFunc("POST /api/fetchAllTas", func(w http.ResponseWriter, r *http.Request) {
+        displayAllTasFromDb(db, w, r)
+    })
+
 
     log.Printf("http server started on port %s\n", server.Addr)
     log.Fatal(server.ListenAndServe())

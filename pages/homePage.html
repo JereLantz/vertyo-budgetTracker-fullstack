@@ -29,7 +29,7 @@
                 </form>
             </div>
 
-            <div id="transDisp">
+            <div id="transDisp" hx-post="/api/fetchAllTas" hx-swap="innerHTML" hx-trigger="load">
             </div>
         </main>
     </body>
