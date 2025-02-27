@@ -55,8 +55,7 @@ func getTAsFromDB(db *sql.DB) ([]transaction, error){
     return transActions, nil
 }
 
-func displayAllTasFromDb(db *sql.DB, w http.ResponseWriter, r *http.Request){
-    //TODO:
+func displayAllTasFromDb(db *sql.DB, w http.ResponseWriter){
     transactions, err := getTAsFromDB(db)
     if err != nil {
         w.WriteHeader(500)
@@ -128,6 +127,27 @@ func dbInit() (*sql.DB, error){
     return db, nil
 }
 
+func deleteTransaction(db *sql.DB, w http.ResponseWriter, r *http.Request) error{
+    deleteQuery := `DELETE FROM transactions where id = ?;`
+    log.Println(r)
+    id, err := strconv.Atoi(r.PathValue("id"))
+    if err != nil {
+        w.WriteHeader(500)
+        log.Printf("error parsing the id from the request %s\n", err)
+        return err
+    }
+
+    _, err = db.Exec(deleteQuery, id)
+    if err != nil {
+        log.Printf("error sending the delete request to the db %s\n", err)
+        w.WriteHeader(500)
+        return err
+    }
+
+    w.WriteHeader(200)
+    return nil
+}
+
 func main(){
     handler := http.NewServeMux()
     server := http.Server{
@@ -149,9 +169,19 @@ func main(){
         addNewTrans(db, w, r)
     })
     handler.HandleFunc("POST /api/fetchAllTas", func(w http.ResponseWriter, r *http.Request) {
-        displayAllTasFromDb(db, w, r)
+        displayAllTasFromDb(db, w)
+    })
+    handler.HandleFunc("DELETE /api/delTrans/{id}", func(w http.ResponseWriter, r *http.Request) {
+        deleteTransaction(db, w, r)
     })
 
+    /*TODO:
+    Add the possibility to edit already added inputs or outputs.
+    Add a chart (e.g. Chart.js) to visualize the distribution of income and expenditure.
+    Add categories for income and expenditure (e.g. food, transport, entertainment).
+    Add the possibility to filter income and expenditure by category.
+    Tyylit
+    */
 
     log.Printf("http server started on port %s\n", server.Addr)
     log.Fatal(server.ListenAndServe())

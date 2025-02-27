@@ -1,8 +1,11 @@
 {{ block "TransDispl" . }}
 <div>
     <p>{{ .Desc }}</p>
-    <p>{{ .Amount }}</p>
-    <button hx-delete="/api/delTrans" name="{{ .Id}}">Delete</button>
+    <p>{{ .Amount }}€</p>
+    <button hx-delete="/api/delTrans/{{ .Id}}"
+            hx-swap="outerHTML"
+            hx-target="closest div"
+            >Delete</button>
 </div>
 {{ end }}
 
