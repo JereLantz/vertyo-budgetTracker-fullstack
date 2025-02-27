@@ -29,7 +29,11 @@
                 </form>
             </div>
 
-            <div id="transDisp" hx-post="/api/fetchAllTas" hx-swap="innerHTML" hx-trigger="load">
+            <div id="transDisp"
+                 hx-post="/api/fetchAllTas"
+                 hx-swap="innerHTML"
+                 hx-trigger="load"
+                 hx-on::after-request="if(event.detail.successful) calculateInitialSaldoSum()" >
             </div>
         </main>
     </body>

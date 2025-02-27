@@ -175,6 +175,9 @@ func main(){
         deleteTransaction(db, w, r)
     })
 
+    // Files
+    handler.Handle("GET /files/js/main.js", http.StripPrefix("/files/js", http.FileServer(http.Dir("./"))))
+
     /*TODO:
     Add the possibility to edit already added inputs or outputs.
     Add a chart (e.g. Chart.js) to visualize the distribution of income and expenditure.
