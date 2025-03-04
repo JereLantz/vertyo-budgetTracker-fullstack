@@ -28,6 +28,10 @@ func init(){
 }
 
 func displayHome(w http.ResponseWriter, r *http.Request){
+    if r.URL.Path != "/"{
+        w.WriteHeader(404)
+        return
+    }
     w.WriteHeader(200)
     pages.ExecuteTemplate(w, "Home", nil)
 }
